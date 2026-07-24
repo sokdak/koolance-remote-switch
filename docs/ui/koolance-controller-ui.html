@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Koolance 무선 제어기 UI 프로토타입</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #e9eef5;
+      --panel: #ffffff;
+      --ink: #0f172a;
+      --muted: #526174;
+      --lcd: #07111f;
+      --lcd-panel: #12233a;
+      --lcd-line: #2a3d55;
+      --blue: #3b82f6;
+      --cyan: #38bdf8;
+      --green: #4ade80;
+      --amber: #fbbf24;
+      --red: #fb7185;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif;
+    }
+
+    button { font: inherit; }
+
+    .page {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 34px 0 60px;
+    }
+
+    h1 { margin: 0 0 8px; font-size: clamp(25px, 4vw, 38px); }
+    .lead { margin: 0 0 26px; color: var(--muted); line-height: 1.6; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 560px) minmax(280px, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .preview-card,
+    .docs-card {
+      background: var(--panel);
+      border: 1px solid #cbd5e1;
+      border-radius: 18px;
+      box-shadow: 0 12px 34px rgb(15 23 42 / 9%);
+    }
+
+    .preview-card { padding: 22px; }
+    .docs-card { padding: 20px; }
+
+    .screen-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 16px;
+    }
+
+    .screen-tabs button {
+      border: 1px solid #cbd5e1;
+      border-radius: 999px;
+      padding: 7px 11px;
+      background: #f8fafc;
+      color: #334155;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .screen-tabs button.active {
+      border-color: #2563eb;
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .bezel {
+      width: min(100%, 516px);
+      margin: 0 auto;
+      padding: 18px;
+      border-radius: 22px;
+      background: linear-gradient(145deg, #334155, #111827);
+      box-shadow: inset 0 0 0 2px #526174, 0 18px 40px rgb(15 23 42 / 25%);
+    }
+
+    .lcd {
+      position: relative;
+      width: 480px;
+      max-width: 100%;
+      aspect-ratio: 3 / 2;
+      margin: auto;
+      overflow: hidden;
+      border-radius: 8px;
+      background: var(--lcd);
+      color: #f8fafc;
+      container-type: inline-size;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      background: var(--lcd);
+    }
+
+    .screen.active { display: flex; }
+
+    .status-bar {
+      height: 48px;
+      flex: 0 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      background: #101d2e;
+      border-bottom: 1px solid #25364d;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .link-ok { color: var(--green); }
+    .link-warn { color: var(--amber); }
+    .link-bad { color: var(--red); }
+
+    .dashboard-body {
+      min-height: 0;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.2fr .9fr;
+      gap: 10px;
+      padding: 12px;
+    }
+
+    .temperature {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #1f3b5d;
+      border-radius: 10px;
+      background: #0e233c;
+    }
+
+    .temperature .label { color: #93c5fd; font-size: 17px; font-weight: 750; }
+    .temperature .value { margin: 2px 0; font-size: 58px; font-weight: 900; line-height: 1; }
+    .temperature .target { color: #cbd5e1; font-size: 15px; }
+
+    .metric-grid {
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 9px;
+    }
+
+    .metric {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 12px;
+      border: 1px solid #263b56;
+      border-radius: 10px;
+      background: var(--lcd-panel);
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+
+    .metric strong { margin-top: 3px; color: #fff; font-size: 24px; }
+
+    .state-footer {
+      height: 50px;
+      flex: 0 0 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      background: #065f46;
+      color: #dcfce7;
+      font-size: 18px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .state-footer.cooling { background: #155e75; color: #cffafe; }
+    .state-footer.alarm { background: #881337; color: #ffe4e6; }
+
+    .secondary-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 12px;
+    }
+
+    .large-metric {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 14px;
+      border: 1px solid #263b56;
+      border-radius: 10px;
+      background: var(--lcd-panel);
+      color: #cbd5e1;
+      font-size: 15px;
+    }
+
+    .large-metric strong { margin-top: 4px; color: #fff; font-size: 26px; }
+    .large-metric .safe { color: var(--green); }
+    .large-metric .warning { color: var(--amber); }
+
+    .check-list {
+      min-height: 0;
+      flex: 1;
+      display: grid;
+      gap: 6px;
+      padding: 10px 14px;
+    }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 11px;
+      border: 1px solid #263b56;
+      border-radius: 8px;
+      background: var(--lcd-panel);
+      font-size: 15px;
+    }
+
+    .check-row b { color: var(--green); }
+    .check-row b.pending { color: var(--amber); }
+
+    .progress {
+      height: 10px;
+      margin: 0 14px 10px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: #334155;
+    }
+
+    .progress span { display: block; width: 70%; height: 100%; background: var(--green); }
+
+    .alarm-body {
+      flex: 1;
+      padding: 22px;
+      background: linear-gradient(145deg, #3f1424, #190b13);
+    }
+
+    .alarm-body h2 { margin: 0; color: #fda4af; font-size: 34px; }
+    .alarm-body p { margin: 10px 0; color: #fecdd3; font-size: 17px; line-height: 1.4; }
+
+    .alarm-data {
+      margin-top: 16px;
+      padding: 13px;
+      border: 1px solid #9f1239;
+      border-radius: 9px;
+      background: #4c1429;
+      color: #fff1f2;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .category-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 12px;
+    }
+
+    .category {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 14px;
+      border: 2px solid #334155;
+      border-radius: 10px;
+      background: var(--lcd-panel);
+      color: #e2e8f0;
+      font-size: 18px;
+      font-weight: 850;
+    }
+
+    .category small { margin-top: 6px; color: #94a3b8; font-size: 13px; font-weight: 500; }
+    .category.selected { border-color: #93c5fd; background: #1d4ed8; color: #fff; }
+    .category.selected small { color: #dbeafe; }
+
+    .editor-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+    }
+
+    .editor-label { color: #93c5fd; font-size: 18px; font-weight: 750; }
+
+    .editor-value {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin: 6px 0;
+    }
+
+    .editor-value .arrow { color: #60a5fa; font-size: 36px; }
+    .editor-value strong { color: #fff; font-size: 62px; line-height: 1; }
+    .editor-help { color: #cbd5e1; font-size: 14px; }
+    .editor-warning { margin-top: 5px; color: var(--amber); font-size: 14px; }
+
+    .editor-footer {
+      height: 50px;
+      flex: 0 0 50px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      font-size: 15px;
+      font-weight: 850;
+    }
+
+    .editor-footer span { display: flex; align-items: center; justify-content: center; }
+    .editor-footer .cancel { background: #334155; color: #e2e8f0; }
+    .editor-footer .confirm { background: #166534; color: #dcfce7; }
+
+    .pump-bars { display: flex; gap: 5px; margin: 10px 0; }
+    .pump-bars i { width: 21px; height: 35px; border-radius: 4px; background: #334155; }
+    .pump-bars i.on { background: var(--cyan); }
+
+    .pump-level { color: #fff; font-size: 54px; line-height: 1; }
+
+    .toast {
+      position: absolute;
+      left: 50%;
+      bottom: 58px;
+      z-index: 5;
+      transform: translate(-50%, 12px);
+      padding: 9px 13px;
+      border: 1px solid #86efac;
+      border-radius: 999px;
+      background: #14532d;
+      color: #dcfce7;
+      opacity: 0;
+      pointer-events: none;
+      transition: .18s ease;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    .hardware-controls {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .hardware-controls button {
+      min-height: 48px;
+      padding: 8px;
+      border: 1px solid #94a3b8;
+      border-radius: 10px;
+      background: #f8fafc;
+      color: #172033;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .hardware-controls button:hover { border-color: #2563eb; background: #eff6ff; }
+    .hardware-controls .power { border-color: #ef4444; color: #991b1b; }
+
+    .docs-card h2 { margin: 0 0 12px; font-size: 21px; }
+    .docs-card h3 { margin: 22px 0 8px; font-size: 16px; }
+    .docs-card p, .docs-card li { color: #425167; font-size: 14px; line-height: 1.55; }
+    .docs-card ul { margin: 8px 0; padding-left: 20px; }
+
+    .spec-table { width: 100%; border-collapse: collapse; }
+    .spec-table th, .spec-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 13px; }
+    .spec-table th { color: #172033; background: #f8fafc; }
+    .spec-table td { color: #526174; }
+
+    @media (max-width: 900px) {
+      .workspace { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 580px) {
+      .page { width: min(100% - 16px, 1120px); padding-top: 18px; }
+      .preview-card { padding: 12px; }
+      .bezel { padding: 9px; border-radius: 14px; }
+      .hardware-controls { grid-template-columns: repeat(3, 1fr); }
+      .lcd { transform-origin: top left; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <h1>Koolance 무선 제어기 UI</h1>
+    <p class="lead">3.5인치 480×320 LCD용 대형 UI 프로토타입입니다. 아래 화면 선택과 가상 물리 버튼으로 상태 및 설정 편집 흐름을 확인할 수 있습니다.</p>
+
+    <div class="workspace">
+      <section class="preview-card">
+        <nav class="screen-tabs" aria-label="프로토타입 화면 선택">
+          <button class="active" data-open="dashboard">대시보드 1</button>
+          <button data-open="dashboard2">대시보드 2</button>
+          <button data-open="precool">예냉</button>
+          <button data-open="alarm">경보</button>
+          <button data-open="settings">설정</button>
+          <button data-open="temperature">목표 온도</button>
+          <button data-open="pump">펌프 단계</button>
+        </nav>
+
+        <div class="bezel">
+          <div class="lcd" id="lcd">
+            <section class="screen active" data-screen="dashboard">
+              <header class="status-bar"><span>EXC-900 · f.3C</span><span class="link-ok">● Wi-Fi&nbsp;&nbsp;● KSM</span></header>
+              <div class="dashboard-body">
+                <div class="temperature"><span class="label">냉각수 LIQ</span><strong class="value">21.8°</strong><span class="target">목표 <b data-target-label>20.0</b>°C</span></div>
+                <div class="metric-grid"><div class="metric">유량<strong>3.2 LPM</strong></div><div class="metric">펌프<strong>2410 RPM</strong></div></div>
+              </div>
+              <footer class="state-footer" id="pc-state">PC RUNNING</footer>
+            </section>
+
+            <section class="screen" data-screen="dashboard2">
+              <header class="status-bar"><span>환경 · 시스템</span><span>2 / 2</span></header>
+              <div class="secondary-grid">
+                <div class="large-metric">이슬점<strong>19.1°C</strong></div>
+                <div class="large-metric">실내 온습도<strong>24.6° / 65%</strong></div>
+                <div class="large-metric">수위<strong class="safe">정상</strong></div>
+                <div class="large-metric">후행 운전<strong>5:00</strong></div>
+              </div>
+              <footer class="state-footer">PWR_LED ON · LINK 정상</footer>
+            </section>
+
+            <section class="screen" data-screen="precool">
+              <header class="status-bar"><span>VLX-2000 · PRECOOL</span><span class="link-ok">LINK ●</span></header>
+              <div class="check-list">
+                <div class="check-row"><span>LIQ 23.4°C → <b data-target-label>20.0</b>°C</span><b class="pending">냉각 중</b></div>
+                <div class="check-row"><span>유량 3.1 LPM</span><b>정상</b></div>
+                <div class="check-row"><span>펌프 2380 RPM</span><b>정상</b></div>
+                <div class="check-row"><span>수위 / 센서</span><b>정상</b></div>
+                <div class="check-row"><span>안정 시간</span><b>7 / 10초</b></div>
+              </div>
+              <div class="progress"><span></span></div>
+              <footer class="state-footer cooling">준비되면 PC를 자동으로 켭니다</footer>
+            </section>
+
+            <section class="screen" data-screen="alarm">
+              <header class="status-bar"><span>EXC-900 · PC RUNNING</span><span class="link-bad">● ALARM</span></header>
+              <div class="alarm-body">
+                <h2>유량 저하</h2>
+                <p>PC 전원에는 개입하지 않습니다.<br>냉각 회로를 확인하세요.</p>
+                <div class="alarm-data">현재 0.4 LPM · 기준 1.0 LPM<br>지속 00:12 · KSM 연결 정상</div>
+              </div>
+              <footer class="state-footer alarm" id="alarm-footer">MUTE 버튼: 버저 음소거</footer>
+            </section>
+
+            <section class="screen" data-screen="settings">
+              <header class="status-bar"><span>설정</span><span>1 / 2</span></header>
+              <div class="category-grid">
+                <div class="category selected" data-category="0">칠러<small>온도 · 펌프 · 단위</small></div>
+                <div class="category" data-category="1">PC 기동<small>인터록 · 후행 운전</small></div>
+                <div class="category" data-category="2">알람<small>KSM 임계값 · 릴레이</small></div>
+                <div class="category" data-category="3">시스템<small>프로파일 · 페어링</small></div>
+              </div>
+              <footer class="state-footer cooling">돌려서 선택 · 눌러서 열기</footer>
+            </section>
+
+            <section class="screen" data-screen="temperature">
+              <header class="status-bar"><span>칠러 › 목표 온도</span><span>LIQ 고정</span></header>
+              <div class="editor-body">
+                <span class="editor-label">목표 온도</span>
+                <div class="editor-value"><span class="arrow">◀</span><strong><span id="target-value">20.0</span>°</strong><span class="arrow">▶</span></div>
+                <span class="editor-help">허용 범위 −20°C … 120°C · 1°C 단위</span>
+              </div>
+              <footer class="editor-footer"><span class="cancel">BACK 취소</span><span class="confirm">누름: 변경 확정</span></footer>
+            </section>
+
+            <section class="screen" data-screen="pump">
+              <header class="status-bar"><span>칠러 › 펌프 단계</span><span class="link-ok">현재 <b id="pump-header">7</b></span></header>
+              <div class="editor-body">
+                <span class="editor-label">펌프 출력</span>
+                <div class="pump-bars" id="pump-bars"></div>
+                <strong class="pump-level"><span id="pump-value">7</span> / 10</strong>
+                <span class="editor-warning">0단계는 펌프 OFF · 운전 중 2초 확인 필요</span>
+              </div>
+              <footer class="editor-footer"><span class="cancel">BACK 취소</span><span class="confirm">누름: 변경 확정</span></footer>
+            </section>
+
+            <div class="toast" id="toast">변경 목록에 추가했습니다</div>
+          </div>
+        </div>
+
+        <div class="hardware-controls" aria-label="가상 물리 조작부">
+          <button data-action="minus">엔코더 ◀</button>
+          <button data-action="press">엔코더 누름</button>
+          <button data-action="plus">엔코더 ▶</button>
+          <button data-action="back">BACK</button>
+          <button class="power" data-action="power">PC POWER</button>
+          <button data-action="mute">BUZZER MUTE</button>
+        </div>
+      </section>
+
+      <aside class="docs-card">
+        <h2>화면 설계 원칙</h2>
+        <ul>
+          <li>실제 LCD 해상도와 동일한 480×320 비율</li>
+          <li>한 화면의 설정 항목은 최대 4개</li>
+          <li>핵심 값은 24–64 px, 본문은 최소 14 px</li>
+          <li>목표 온도와 펌프 단계는 한 값 전용 편집 화면</li>
+          <li>편집값은 즉시 전송하지 않고 변경 목록에 보관</li>
+          <li>장치 적용 후 KSM polling으로 실제 반영값 재검증</li>
+        </ul>
+
+        <h3>가상 조작</h3>
+        <p>목표 온도 또는 펌프 화면에서 엔코더 좌우 버튼을 눌러 값을 바꿀 수 있습니다. 엔코더 누름은 변경을 확정하고, BACK은 대시보드로 돌아갑니다.</p>
+
+        <h3>주요 설정</h3>
+        <table class="spec-table">
+          <thead><tr><th>분류</th><th>항목</th></tr></thead>
+          <tbody>
+            <tr><td>칠러</td><td>온도 모드/목표, 펌프 0–10, 단위</td></tr>
+            <tr><td>PC</td><td>시작 온도, 최소 유량/RPM, 안정 시간, 후행 시간</td></tr>
+            <tr><td>알람</td><td>온도 편차, 유량, 팬/펌프 RPM, 수위</td></tr>
+            <tr><td>시스템</td><td>EXC/VLX 프로파일, 페어링, 결로 경고, 진단</td></tr>
+          </tbody>
+        </table>
+
+        <h3>오조작 방지</h3>
+        <p>PC 운전 중 펌프 0단계는 별도 2초 확인을 요구하고, 모델 프로파일 변경은 PWR_LED가 OFF일 때만 허용합니다. 이슬점 이하 설정은 사용자의 결정에 따라 차단하지 않고 경고만 표시합니다.</p>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const screens = [...document.querySelectorAll('[data-screen]')];
+    const tabs = [...document.querySelectorAll('[data-open]')];
+    const categories = [...document.querySelectorAll('[data-category]')];
+    const toast = document.getElementById('toast');
+    let current = 'dashboard';
+    let categoryIndex = 0;
+    let targetTemp = 20;
+    let pumpLevel = 7;
+    let pcRunning = true;
+    let muted = false;
+    let toastTimer;
+
+    function openScreen(name) {
+      current = name;
+      screens.forEach(screen => screen.classList.toggle('active', screen.dataset.screen === name));
+      tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.open === name));
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 1300);
+    }
+
+    function renderTarget() {
+      document.getElementById('target-value').textContent = targetTemp.toFixed(1);
+      document.querySelectorAll('[data-target-label]').forEach(node => node.textContent = targetTemp.toFixed(1));
+    }
+
+    function renderPump() {
+      document.getElementById('pump-value').textContent = pumpLevel;
+      document.getElementById('pump-header').textContent = pumpLevel;
+      const bars = document.getElementById('pump-bars');
+      bars.replaceChildren(...Array.from({ length: 10 }, (_, index) => {
+        const bar = document.createElement('i');
+        if (index < pumpLevel) bar.className = 'on';
+        return bar;
+      }));
+    }
+
+    function renderCategory() {
+      categories.forEach((category, index) => category.classList.toggle('selected', index === categoryIndex));
+    }
+
+    function rotate(direction) {
+      if (current === 'temperature') {
+        targetTemp = Math.max(-20, Math.min(120, targetTemp + direction));
+        renderTarget();
+      } else if (current === 'pump') {
+        pumpLevel = Math.max(0, Math.min(10, pumpLevel + direction));
+        renderPump();
+      } else if (current === 'settings') {
+        categoryIndex = (categoryIndex + direction + categories.length) % categories.length;
+        renderCategory();
+      } else if (current === 'dashboard') {
+        openScreen(direction > 0 ? 'dashboard2' : 'settings');
+      } else if (current === 'dashboard2') {
+        openScreen(direction > 0 ? 'settings' : 'dashboard');
+      }
+    }
+
+    function pressEncoder() {
+      if (current === 'dashboard' || current === 'dashboard2') {
+        openScreen('settings');
+      } else if (current === 'settings') {
+        if (categoryIndex === 0) openScreen('temperature');
+        else showToast('이 카테고리 화면은 설계 명세에 포함됩니다');
+      } else if (current === 'temperature') {
+        showToast(`목표 ${targetTemp.toFixed(1)}°C를 변경 목록에 추가`);
+      } else if (current === 'pump') {
+        showToast(`펌프 ${pumpLevel}단계를 변경 목록에 추가`);
+      }
+    }
+
+    tabs.forEach(tab => tab.addEventListener('click', () => openScreen(tab.dataset.open)));
+
+    document.querySelectorAll('[data-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.action;
+        if (action === 'minus') rotate(-1);
+        if (action === 'plus') rotate(1);
+        if (action === 'press') pressEncoder();
+        if (action === 'back') openScreen('dashboard');
+        if (action === 'power') {
+          pcRunning = !pcRunning;
+          document.getElementById('pc-state').textContent = pcRunning ? 'PC RUNNING' : 'PRECOOL 요청됨';
+          showToast(pcRunning ? 'PC 상태 예시: RUNNING' : '예냉 시퀀스 요청 예시');
+        }
+        if (action === 'mute') {
+          muted = !muted;
+          document.getElementById('alarm-footer').textContent = muted ? '버저 음소거됨 · 새 경보 시 재활성' : 'MUTE 버튼: 버저 음소거';
+          showToast(muted ? '현재 경보 음소거' : '버저 음소거 해제');
+        }
+      });
+    });
+
+    renderTarget();
+    renderPump();
+    renderCategory();
+  </script>
+</body>
+</html>

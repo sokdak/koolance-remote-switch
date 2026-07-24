@@ -294,6 +294,69 @@
     .category.selected { border-color: #93c5fd; background: #1d4ed8; color: #fff; }
     .category.selected small { color: #dbeafe; }
 
+    .settings-list {
+      min-height: 0;
+      flex: 1;
+      display: grid;
+      grid-template-rows: repeat(4, 1fr);
+      gap: 6px;
+      padding: 10px 12px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 7px 12px;
+      border: 2px solid #263b56;
+      border-radius: 8px;
+      background: var(--lcd-panel);
+      color: #dbeafe;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .setting-row strong { color: #fff; font-size: 16px; text-align: right; }
+    .setting-row.selected { border-color: #93c5fd; background: #1d4ed8; }
+    .setting-row.action strong { color: var(--green); }
+    .setting-row.empty { visibility: hidden; }
+
+    .generic-value {
+      max-width: 420px;
+      color: #fff;
+      font-size: 42px;
+      font-weight: 900;
+      line-height: 1.15;
+      text-align: center;
+      word-break: keep-all;
+    }
+
+    .system-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+      padding: 18px;
+    }
+
+    .system-step,
+    .diagnostic-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border: 1px solid #263b56;
+      border-radius: 8px;
+      background: var(--lcd-panel);
+      color: #cbd5e1;
+      font-size: 15px;
+    }
+
+    .system-step strong,
+    .diagnostic-row strong { color: #fff; }
+
     .editor-body {
       flex: 1;
       display: flex;
@@ -465,14 +528,53 @@
             </section>
 
             <section class="screen" data-screen="settings">
-              <header class="status-bar"><span>설정</span><span>1 / 2</span></header>
+              <header class="status-bar"><span>설정</span><span>4개 메뉴</span></header>
               <div class="category-grid">
                 <div class="category selected" data-category="0">칠러<small>온도 · 펌프 · 단위</small></div>
                 <div class="category" data-category="1">PC 기동<small>인터록 · 후행 운전</small></div>
-                <div class="category" data-category="2">알람<small>KSM 임계값 · 릴레이</small></div>
+                <div class="category" data-category="2">알람·릴레이<small>KSM 임계값 · 수위</small></div>
                 <div class="category" data-category="3">시스템<small>프로파일 · 페어링</small></div>
               </div>
               <footer class="state-footer cooling">돌려서 선택 · 눌러서 열기</footer>
+            </section>
+
+            <section class="screen" data-screen="settings-list">
+              <header class="status-bar"><span id="settings-list-title">칠러 설정</span><span id="settings-list-page">1 / 2</span></header>
+              <div class="settings-list" id="settings-list-rows"></div>
+              <footer class="state-footer cooling"><span id="settings-list-footer">누름: 편집 · BACK: 카테고리</span></footer>
+            </section>
+
+            <section class="screen" data-screen="generic-editor">
+              <header class="status-bar"><span id="generic-path">설정 › 항목</span><span id="generic-kind">편집</span></header>
+              <div class="editor-body">
+                <span class="editor-label" id="generic-label">설정값</span>
+                <div class="editor-value"><span class="arrow">◀</span><strong class="generic-value" id="generic-value">값</strong><span class="arrow">▶</span></div>
+                <span class="editor-help" id="generic-help">엔코더로 변경</span>
+                <span class="editor-warning" id="generic-warning"></span>
+              </div>
+              <footer class="editor-footer"><span class="cancel">BACK 취소</span><span class="confirm">누름: 변경 확정</span></footer>
+            </section>
+
+            <section class="screen" data-screen="pairing">
+              <header class="status-bar"><span>시스템 › 무선 페어링</span><span class="link-warn" id="pairing-time">120초</span></header>
+              <div class="system-body">
+                <div class="system-step"><span>1. LCD에서 페어링 시작</span><strong class="link-ok">완료</strong></div>
+                <div class="system-step"><span>2. Pi HAT의 PAIR 버튼</span><strong class="link-warn" id="pairing-node">대기 중</strong></div>
+                <div class="system-step"><span>3. 발견된 노드 ID 확인</span><strong id="pairing-id">—</strong></div>
+                <div class="system-step"><span>4. 고유 키 저장 및 재접속</span><strong>자동</strong></div>
+              </div>
+              <footer class="state-footer cooling">엔코더 누름: 노드 발견 시뮬레이션</footer>
+            </section>
+
+            <section class="screen" data-screen="diagnostics">
+              <header class="status-bar"><span>시스템 › 진단</span><span class="link-ok">정상</span></header>
+              <div class="system-body">
+                <div class="diagnostic-row"><span>Wi-Fi RSSI / Heartbeat</span><strong>−48 dBm / 1초</strong></div>
+                <div class="diagnostic-row"><span>KSM 프레임 / 오류</span><strong>18,420 / 0</strong></div>
+                <div class="diagnostic-row"><span>USB FTDI</span><strong>연결됨 · 9600 8N1</strong></div>
+                <div class="diagnostic-row"><span>ESP / Pi / Supervisor</span><strong>1.0.0 / 1.0.0 / 1.0.0</strong></div>
+              </div>
+              <footer class="state-footer">BACK: 시스템 설정</footer>
             </section>
 
             <section class="screen" data-screen="temperature">
@@ -522,7 +624,7 @@
         </ul>
 
         <h3>가상 조작</h3>
-        <p>목표 온도 또는 펌프 화면에서 엔코더 좌우 버튼을 눌러 값을 바꿀 수 있습니다. 엔코더 누름은 변경을 확정하고, BACK은 대시보드로 돌아갑니다.</p>
+        <p>설정 화면에서 엔코더로 칠러, PC 기동, 알람·릴레이, 시스템 카테고리를 선택할 수 있습니다. 각 목록은 화면당 최대 4개 항목으로 페이지가 자동 전환되며, 엔코더 누름으로 값 편집 또는 실행 화면에 들어갑니다. BACK은 편집을 취소하거나 상위 화면으로 돌아갑니다.</p>
 
         <h3>주요 설정</h3>
         <table class="spec-table">
@@ -530,8 +632,8 @@
           <tbody>
             <tr><td>칠러</td><td>온도 모드/목표, 펌프 0–10, 단위</td></tr>
             <tr><td>PC</td><td>시작 온도, 최소 유량/RPM, 안정 시간, 후행 시간</td></tr>
-            <tr><td>알람</td><td>온도 편차, 유량, 팬/펌프 RPM, 수위</td></tr>
-            <tr><td>시스템</td><td>EXC/VLX 프로파일, 페어링, 결로 경고, 진단</td></tr>
+            <tr><td>알람·릴레이</td><td>각각의 온도 편차, 유량, 팬/펌프 RPM, 수위 동작</td></tr>
+            <tr><td>시스템</td><td>EXC/VLX 프로파일, 페어링, 결로 경고, 버저, 진단</td></tr>
           </tbody>
         </table>
 
@@ -546,39 +648,116 @@
     const tabs = [...document.querySelectorAll('[data-open]')];
     const categories = [...document.querySelectorAll('[data-category]')];
     const toast = document.getElementById('toast');
+    const categoryKeys = ['chiller', 'pc', 'alarm', 'system'];
+    const categoryTitles = {
+      chiller: '칠러 설정',
+      pc: 'PC 기동 인터록',
+      alarm: 'KSM 알람·릴레이',
+      system: '시스템 설정'
+    };
+    const staged = new Set();
     let current = 'dashboard';
     let categoryIndex = 0;
-    let targetTemp = 20;
-    let pumpLevel = 7;
+    let currentCategory = 'chiller';
+    let listCursor = 0;
+    let editingItem = null;
+    let editingOriginal = null;
     let pcRunning = true;
     let muted = false;
     let toastTimer;
 
+    const settingsData = {
+      chiller: [
+        { id: 'controlMode', label: '온도 제어 방식', type: 'enum', values: ['LIQ 고정', 'EXT 고정', 'LIQ-AMB Δ', 'EXT-AMB Δ'], value: 0 },
+        { id: 'targetTemp', label: '목표 온도', type: 'special', screen: 'temperature', value: 20 },
+        { id: 'pumpLevel', label: '펌프 단계', type: 'special', screen: 'pump', value: 7 },
+        { id: 'units', label: '측정 단위', type: 'enum', values: ['°C / LPM', '°F / GPM'], value: 0 },
+        { id: 'applyChiller', label: '장치에 적용', type: 'action', action: 'apply-chiller', valueLabel: 'KSM 쓰기 ›' }
+      ],
+      pc: [
+        { id: 'startTemp', label: 'PC 시작 허용 온도', type: 'number', value: 22, min: -20, max: 120, step: 1, decimals: 1, unit: '°C' },
+        { id: 'minFlow', label: '최소 유량', type: 'number', value: 1, min: 0.1, max: 20, step: 0.1, decimals: 1, unit: 'LPM' },
+        { id: 'minPump', label: '최소 펌프 RPM', type: 'number', value: 1000, min: 100, max: 10000, step: 100, decimals: 0, unit: 'RPM' },
+        { id: 'stableTime', label: '정상 유지 시간', type: 'number', value: 10, min: 1, max: 60, step: 1, decimals: 0, unit: '초' },
+        { id: 'postrun', label: '후행 운전', type: 'number', value: 5, min: 0, max: 60, step: 1, decimals: 0, unit: '분' },
+        { id: 'savePc', label: '인터록 설정 저장', type: 'action', action: 'save-pc', valueLabel: '저장 ›' }
+      ],
+      alarm: [
+        { id: 'alarmTemp', label: '알람 온도 편차', type: 'number', value: 5, min: 1, max: 50, step: 1, decimals: 0, unit: '°C' },
+        { id: 'alarmFlow', label: '알람 최소 유량', type: 'optional', value: 1, min: 0.1, max: 20, step: 0.1, decimals: 1, unit: 'LPM' },
+        { id: 'alarmFan', label: '알람 최소 팬 RPM', type: 'optional', value: null, min: 100, max: 10000, step: 100, decimals: 0, unit: 'RPM' },
+        { id: 'alarmPump', label: '알람 최소 펌프 RPM', type: 'optional', value: 1000, min: 100, max: 10000, step: 100, decimals: 0, unit: 'RPM' },
+        { id: 'relayTemp', label: '릴레이 온도 편차', type: 'number', value: 5, min: 1, max: 50, step: 1, decimals: 0, unit: '°C' },
+        { id: 'relayFlow', label: '릴레이 최소 유량', type: 'optional', value: null, min: 0.1, max: 20, step: 0.1, decimals: 1, unit: 'LPM' },
+        { id: 'relayFan', label: '릴레이 최소 팬 RPM', type: 'optional', value: null, min: 100, max: 10000, step: 100, decimals: 0, unit: 'RPM' },
+        { id: 'relayPump', label: '릴레이 최소 펌프 RPM', type: 'optional', value: null, min: 100, max: 10000, step: 100, decimals: 0, unit: 'RPM' },
+        { id: 'levelAction', label: '수위 동작', type: 'enum', values: ['모두 끔', '알람', '릴레이', '알람+릴레이'], value: 3 },
+        { id: 'applyAlarm', label: '알람·릴레이 적용', type: 'action', action: 'apply-alarm', valueLabel: 'KSM 쓰기 ›' }
+      ],
+      system: [
+        { id: 'profile', label: '장치 프로파일', type: 'enum', values: ['EXC-900', 'VLX-2000'], value: 0, warning: 'PWR_LED OFF 상태에서 2초 확인 후 적용' },
+        { id: 'dewMargin', label: '결로 경고 여유', type: 'number', value: 2, min: 0, max: 10, step: 0.5, decimals: 1, unit: '°C' },
+        { id: 'condensation', label: '결로 시 동작', type: 'enum', values: ['경보만'], value: 0, warning: 'PC 기동이나 운전을 차단하지 않음' },
+        { id: 'pair', label: '무선 페어링', type: 'action', action: 'pair', valueLabel: '연결됨 ›' },
+        { id: 'buzzer', label: '버저 시험', type: 'action', action: 'buzzer', valueLabel: '실행 ›' },
+        { id: 'diagnostics', label: '진단 / 로그', type: 'action', action: 'diagnostics', valueLabel: '열기 ›' },
+        { id: 'saveSystem', label: '시스템 설정 저장', type: 'action', action: 'save-system', valueLabel: '저장 ›' }
+      ]
+    };
+
+    function getItem(category, id) {
+      return settingsData[category].find(item => item.id === id);
+    }
+
     function openScreen(name) {
       current = name;
       screens.forEach(screen => screen.classList.toggle('active', screen.dataset.screen === name));
-      tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.open === name));
+      const tabName = ['settings-list', 'generic-editor', 'pairing', 'diagnostics'].includes(name) ? 'settings' : name;
+      tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.open === tabName));
     }
 
     function showToast(message) {
       toast.textContent = message;
       toast.classList.add('show');
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toast.classList.remove('show'), 1300);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 1700);
+    }
+
+    function decimalRound(value, decimals) {
+      const scale = 10 ** decimals;
+      return Math.round(value * scale) / scale;
+    }
+
+    function formatItem(item) {
+      if (item.type === 'enum') return item.values[item.value];
+      if (item.type === 'action') return item.valueLabel;
+      if (item.type === 'optional' && item.value === null) return '사용 안 함';
+      if (item.type === 'special' && item.id === 'targetTemp') return `${item.value.toFixed(1)} °C`;
+      if (item.type === 'special' && item.id === 'pumpLevel') return `${item.value} / 10`;
+      const number = Number(item.value).toFixed(item.decimals ?? 0);
+      return `${number} ${item.unit ?? ''}`.trim();
+    }
+
+    function itemHelp(item) {
+      if (item.type === 'enum') return `${item.values.length}개 선택 · 엔코더로 변경`;
+      if (item.type === 'optional') return `사용 안 함 또는 ${item.min}–${item.max} ${item.unit}`;
+      return `${item.min}–${item.max} ${item.unit ?? ''} · ${item.step} 단위`;
     }
 
     function renderTarget() {
-      document.getElementById('target-value').textContent = targetTemp.toFixed(1);
-      document.querySelectorAll('[data-target-label]').forEach(node => node.textContent = targetTemp.toFixed(1));
+      const item = getItem('chiller', 'targetTemp');
+      document.getElementById('target-value').textContent = item.value.toFixed(1);
+      document.querySelectorAll('[data-target-label]').forEach(node => node.textContent = item.value.toFixed(1));
     }
 
     function renderPump() {
-      document.getElementById('pump-value').textContent = pumpLevel;
-      document.getElementById('pump-header').textContent = pumpLevel;
+      const item = getItem('chiller', 'pumpLevel');
+      document.getElementById('pump-value').textContent = item.value;
+      document.getElementById('pump-header').textContent = item.value;
       const bars = document.getElementById('pump-bars');
       bars.replaceChildren(...Array.from({ length: 10 }, (_, index) => {
         const bar = document.createElement('i');
-        if (index < pumpLevel) bar.className = 'on';
+        if (index < item.value) bar.className = 'on';
         return bar;
       }));
     }
@@ -587,13 +766,166 @@
       categories.forEach((category, index) => category.classList.toggle('selected', index === categoryIndex));
     }
 
+    function stagedCount(category) {
+      return [...staged].filter(key => key.startsWith(`${category}:`)).length;
+    }
+
+    function openSettingsList(category, cursor = 0) {
+      currentCategory = category;
+      listCursor = Math.max(0, Math.min(settingsData[category].length - 1, cursor));
+      renderSettingsList();
+      openScreen('settings-list');
+    }
+
+    function renderSettingsList() {
+      const items = settingsData[currentCategory];
+      const pageSize = 4;
+      const page = Math.floor(listCursor / pageSize);
+      const pageCount = Math.ceil(items.length / pageSize);
+      const start = page * pageSize;
+      document.querySelector('[data-screen="settings-list"]').dataset.category = currentCategory;
+      document.getElementById('settings-list-title').textContent = categoryTitles[currentCategory];
+      document.getElementById('settings-list-page').textContent = `${page + 1} / ${pageCount}`;
+      const count = stagedCount(currentCategory);
+      document.getElementById('settings-list-footer').textContent = count ? `변경 ${count}개 · 누름: 편집/실행` : '누름: 편집 · BACK: 카테고리';
+      const rows = document.getElementById('settings-list-rows');
+      rows.replaceChildren();
+      for (let offset = 0; offset < pageSize; offset += 1) {
+        const index = start + offset;
+        const item = items[index];
+        const row = document.createElement('div');
+        if (!item) {
+          row.className = 'setting-row empty';
+          rows.appendChild(row);
+          continue;
+        }
+        row.className = `setting-row${index === listCursor ? ' selected' : ''}${item.type === 'action' ? ' action' : ''}`;
+        const label = document.createElement('span');
+        label.textContent = item.label;
+        const value = document.createElement('strong');
+        value.textContent = formatItem(item);
+        row.append(label, value);
+        row.addEventListener('click', () => {
+          listCursor = index;
+          renderSettingsList();
+        });
+        rows.appendChild(row);
+      }
+    }
+
+    function openGenericEditor(item) {
+      editingItem = item;
+      editingOriginal = item.value;
+      renderGenericEditor();
+      openScreen('generic-editor');
+    }
+
+    function renderGenericEditor() {
+      const item = editingItem;
+      document.getElementById('generic-path').textContent = `${categoryTitles[currentCategory]} › ${item.label}`;
+      document.getElementById('generic-kind').textContent = item.type === 'enum' ? '선택' : '값 조절';
+      document.getElementById('generic-label').textContent = item.label;
+      document.getElementById('generic-value').textContent = formatItem(item);
+      document.getElementById('generic-help').textContent = itemHelp(item);
+      document.getElementById('generic-warning').textContent = item.warning ?? '';
+    }
+
+    function adjustItem(item, direction) {
+      if (item.type === 'enum') {
+        item.value = (item.value + direction + item.values.length) % item.values.length;
+      } else if (item.type === 'optional') {
+        if (item.value === null) item.value = item.min;
+        else if (direction < 0 && item.value <= item.min) item.value = null;
+        else item.value = decimalRound(Math.max(item.min, Math.min(item.max, item.value + direction * item.step)), item.decimals ?? 0);
+      } else {
+        item.value = decimalRound(Math.max(item.min, Math.min(item.max, item.value + direction * item.step)), item.decimals ?? 0);
+      }
+    }
+
+    function stageEditingItem() {
+      staged.add(`${currentCategory}:${editingItem.id}`);
+      showToast(`${editingItem.label}: ${formatItem(editingItem)} · 변경 목록 추가`);
+      editingItem = null;
+      editingOriginal = null;
+      openSettingsList(currentCategory, listCursor);
+    }
+
+    function clearCategoryChanges(category) {
+      [...staged].filter(key => key.startsWith(`${category}:`)).forEach(key => staged.delete(key));
+    }
+
+    function executeAction(item) {
+      if (item.action === 'apply-chiller') {
+        clearCategoryChanges('chiller');
+        showToast('KSM 쓰기 → polling 재조회 검증 성공');
+        renderSettingsList();
+      } else if (item.action === 'save-pc') {
+        clearCategoryChanges('pc');
+        showToast('PC 인터록 설정을 CRC 이중 슬롯에 저장');
+        renderSettingsList();
+      } else if (item.action === 'apply-alarm') {
+        clearCategoryChanges('alarm');
+        showToast('알람·릴레이 설정 재조회 검증 성공');
+        renderSettingsList();
+      } else if (item.action === 'pair') {
+        document.getElementById('pairing-time').textContent = '120초';
+        document.getElementById('pairing-node').textContent = '대기 중';
+        document.getElementById('pairing-id').textContent = '—';
+        openScreen('pairing');
+      } else if (item.action === 'buzzer') {
+        playBuzzer();
+        showToast('버저 자체진단음 재생');
+      } else if (item.action === 'diagnostics') {
+        openScreen('diagnostics');
+      } else if (item.action === 'save-system') {
+        clearCategoryChanges('system');
+        showToast('시스템 설정을 CRC 이중 슬롯에 저장');
+        renderSettingsList();
+      }
+    }
+
+    function playBuzzer() {
+      try {
+        const audio = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audio.createOscillator();
+        const gain = audio.createGain();
+        oscillator.frequency.value = 880;
+        gain.gain.value = 0.04;
+        oscillator.connect(gain).connect(audio.destination);
+        oscillator.start();
+        oscillator.stop(audio.currentTime + 0.12);
+      } catch (_) {
+        // 브라우저에서 오디오를 차단해도 UI 동작은 유지한다.
+      }
+    }
+
+    function openSpecial(item) {
+      editingItem = item;
+      editingOriginal = item.value;
+      if (item.screen === 'temperature') renderTarget();
+      if (item.screen === 'pump') renderPump();
+      openScreen(item.screen);
+    }
+
     function rotate(direction) {
       if (current === 'temperature') {
-        targetTemp = Math.max(-20, Math.min(120, targetTemp + direction));
+        const item = getItem('chiller', 'targetTemp');
+        const mode = getItem('chiller', 'controlMode').value;
+        const units = getItem('chiller', 'units').value;
+        const range = mode >= 2 ? (units === 0 ? [-50, 50] : [-58, 122]) : (units === 0 ? [-20, 120] : [-4, 248]);
+        item.value = Math.max(range[0], Math.min(range[1], item.value + direction));
         renderTarget();
       } else if (current === 'pump') {
-        pumpLevel = Math.max(0, Math.min(10, pumpLevel + direction));
+        const item = getItem('chiller', 'pumpLevel');
+        item.value = Math.max(0, Math.min(10, item.value + direction));
         renderPump();
+      } else if (current === 'generic-editor') {
+        adjustItem(editingItem, direction);
+        renderGenericEditor();
+      } else if (current === 'settings-list') {
+        const length = settingsData[currentCategory].length;
+        listCursor = (listCursor + direction + length) % length;
+        renderSettingsList();
       } else if (current === 'settings') {
         categoryIndex = (categoryIndex + direction + categories.length) % categories.length;
         renderCategory();
@@ -608,16 +940,68 @@
       if (current === 'dashboard' || current === 'dashboard2') {
         openScreen('settings');
       } else if (current === 'settings') {
-        if (categoryIndex === 0) openScreen('temperature');
-        else showToast('이 카테고리 화면은 설계 명세에 포함됩니다');
-      } else if (current === 'temperature') {
-        showToast(`목표 ${targetTemp.toFixed(1)}°C를 변경 목록에 추가`);
-      } else if (current === 'pump') {
-        showToast(`펌프 ${pumpLevel}단계를 변경 목록에 추가`);
+        openSettingsList(categoryKeys[categoryIndex]);
+      } else if (current === 'settings-list') {
+        const item = settingsData[currentCategory][listCursor];
+        if (item.type === 'action') executeAction(item);
+        else if (item.type === 'special') openSpecial(item);
+        else openGenericEditor(item);
+      } else if (current === 'generic-editor') {
+        stageEditingItem();
+      } else if (current === 'temperature' || current === 'pump') {
+        stageEditingItem();
+      } else if (current === 'pairing') {
+        document.getElementById('pairing-node').textContent = '발견됨';
+        document.getElementById('pairing-node').className = 'link-ok';
+        document.getElementById('pairing-id').textContent = 'KRS-PI-A7C2';
+        document.getElementById('pairing-time').textContent = '확인 대기';
+        showToast('노드 ID 확인 후 고유 키를 자동 저장합니다');
       }
     }
 
-    tabs.forEach(tab => tab.addEventListener('click', () => openScreen(tab.dataset.open)));
+    function back() {
+      if (current === 'generic-editor') {
+        editingItem.value = editingOriginal;
+        editingItem = null;
+        editingOriginal = null;
+        openSettingsList(currentCategory, listCursor);
+      } else if (current === 'temperature' || current === 'pump') {
+        if (editingItem) editingItem.value = editingOriginal;
+        renderTarget();
+        renderPump();
+        editingItem = null;
+        editingOriginal = null;
+        openSettingsList('chiller', listCursor);
+      } else if (current === 'settings-list') {
+        openScreen('settings');
+      } else if (current === 'pairing' || current === 'diagnostics') {
+        openSettingsList('system', current === 'pairing' ? 3 : 5);
+      } else if (current === 'settings') {
+        openScreen('dashboard');
+      } else {
+        openScreen('dashboard');
+      }
+    }
+
+    tabs.forEach(tab => tab.addEventListener('click', () => {
+      const name = tab.dataset.open;
+      if (name === 'temperature') {
+        currentCategory = 'chiller';
+        listCursor = 1;
+        openSpecial(getItem('chiller', 'targetTemp'));
+      } else if (name === 'pump') {
+        currentCategory = 'chiller';
+        listCursor = 2;
+        openSpecial(getItem('chiller', 'pumpLevel'));
+      } else {
+        openScreen(name);
+      }
+    }));
+
+    categories.forEach((category, index) => category.addEventListener('click', () => {
+      categoryIndex = index;
+      renderCategory();
+    }));
 
     document.querySelectorAll('[data-action]').forEach(button => {
       button.addEventListener('click', () => {
@@ -625,7 +1009,7 @@
         if (action === 'minus') rotate(-1);
         if (action === 'plus') rotate(1);
         if (action === 'press') pressEncoder();
-        if (action === 'back') openScreen('dashboard');
+        if (action === 'back') back();
         if (action === 'power') {
           pcRunning = !pcRunning;
           document.getElementById('pc-state').textContent = pcRunning ? 'PC RUNNING' : 'PRECOOL 요청됨';
@@ -642,6 +1026,12 @@
     renderTarget();
     renderPump();
     renderCategory();
+
+    const previewRoute = location.hash.slice(1);
+    const settingsRoute = previewRoute.match(/^settings-(chiller|pc|alarm|system)(?:-(\d+))?$/);
+    if (settingsRoute) openSettingsList(settingsRoute[1], Number(settingsRoute[2] ?? 0));
+    if (previewRoute === 'pairing') executeAction(getItem('system', 'pair'));
+    if (previewRoute === 'diagnostics') executeAction(getItem('system', 'diagnostics'));
   </script>
 </body>
 </html>

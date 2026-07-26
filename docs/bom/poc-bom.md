@@ -3,6 +3,7 @@
 - 작성일: 2026-07-26
 - 대상 장비: Koolance EXC-900 또는 VLX-2000-110V 중 한 모델 선택 지원
 - 기준 설계: [2026-07-24-koolance-wireless-controller-design.md](../superpowers/specs/2026-07-24-koolance-wireless-controller-design.md)
+- 견적 제출용 간략 BOM: [poc-rfq-bom.md](poc-rfq-bom.md) / [poc-rfq-bom.csv](poc-rfq-bom.csv)
 - PoC 범위: 저전압 전체 기능, 실제 VLX 소프트 전원 버튼, EXC 12 V 더미 부하
 
 ## 1. 이번 PoC에서 확인할 것
